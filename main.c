@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 // Tipo do dado que será usado
 typedef struct {
@@ -58,28 +57,48 @@ void listar_produtos(Lista *lista) {
     printf("+--------------------------------------------+\n");
 };
 
-void buscar_produto(Lista *lista) {
-    char nome_produto[50];
-    printf("Qual produto esta buscando em nosso sistema: ");
-    scanf("%49s", nome_produto);
+Produto* buscar_produto(Lista *lista) {
+    int codigo_produto;
+    printf("Digite o codigo do produto cadastro em nosso sistema: ");
+    scanf(" %d", &codigo_produto);
 
     for(int i = 0; i < lista->quantidade; i++) {
-        if(strcmp(nome_produto, lista->dados[i].nome) == 0) {
-            printf("\nProduto encontrado: \n");
-            printf("|  %3d  |  %-10s  |  %8.2f  |  %4d  |\n",
-                lista->dados[i].codigo, 
-                lista->dados[i].nome, 
-                lista->dados[i].preco, 
-                lista->dados[i].quantidade);
-            break; 
+        if(codigo_produto == lista->dados[i].codigo) {
+            return &lista->dados[i];
         }
-        else {
-            printf("Nenhum produto com este nome foi encontrado.\n");
-            break;
-        }
-    }
+    }   
+
+    return NULL;
 };
-// void atualizar_estoque();
+
+void imprimirProduto(Produto *p) {
+    if(p == NULL) {
+        printf("Produto nao encontrado.\n");
+    }
+
+    printf("+-----------------------------------------+\n");
+    printf("| Cod    | Nome        | Preco   | Qtd    |\n");
+    printf("+-----------------------------------------+\n");
+    printf("| %6d | %-11s | %-7.2f | %-6d |\n",
+           p->codigo,
+           p->nome,
+           p->preco,
+           p->quantidade);
+    printf("+-----------------------------------------+\n");
+}
+
+void atualizar_estoque(Lista *lista) {
+    int novo_valor_estoque;
+
+    Produto *atualiza_produto = buscar_produto(lista);
+    
+    printf("\nDigite o novo valor existente no estoque: ");
+    scanf(" %d", &novo_valor_estoque);
+    
+    atualiza_produto->quantidade = novo_valor_estoque;
+
+    imprimirProduto(atualiza_produto);
+};
 // void remover_produto();
 // void liberar_memoria();
 
@@ -118,12 +137,13 @@ int main(void) {
         }
         //Condição 3
         if(opcao == 3) {
-            buscar_produto(&lista);
+            Produto *resultado = buscar_produto(&lista);
+            imprimirProduto(resultado);
         }
-        // //Condição 4
-        // if(opcao == 4) {
-        //     atualizar_estoque();
-        // }
+        //Condição 4
+        if(opcao == 4) {
+            atualizar_estoque(&lista);
+        }
         // //Condição 5
         // if(opcao == 5) {
         //     remover_produto();
