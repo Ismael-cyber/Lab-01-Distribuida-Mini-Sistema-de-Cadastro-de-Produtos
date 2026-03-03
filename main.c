@@ -99,8 +99,24 @@ void atualizar_estoque(Lista *lista) {
 
     imprimirProduto(atualiza_produto);
 };
-// void remover_produto();
-// void liberar_memoria();
+
+void remover_produto(Lista *lista) {
+    Produto *produto_removido = buscar_produto(lista);
+
+    free(produto_removido->nome); //Liberando a memória alocada para o nome do produto no vetor
+
+    for(int i = produto_removido->codigo; i < lista->quantidade - 1; i++) {
+        lista->dados[i] = lista->dados[i + 1]; //Deslocando os elementos no vetor
+    }
+
+    lista->quantidade--; //Diminuindo a quantidade de produtos no vetor
+    lista->dados = realloc(lista->dados, lista->quantidade * sizeof(Produto)); // Realocando tamanho do vetor
+};
+
+void liberar_memoria(Lista *lista) {
+    free(lista->dados);
+    printf("Memoria liberada, forte abraco!\n");
+};
 
 int main(void) {
     // Declarar vetor de Produtos
@@ -112,10 +128,10 @@ int main(void) {
     int opcao;
     while(opcao != 6) {
         // Aparicao do MENU
-        printf("==============================================\n");
+        printf("\n==============================================\n");
         printf("====== Sistema de Cadastro de Produtos =======\n");
         printf("==============================================\n");
-        printf("Menu\n");
+        printf("\nMenu\n");
         printf("1. Adicionar Produto\n");
         printf("2. Listar Produtos\n");
         printf("3. Buscar Produto\n");
@@ -124,7 +140,7 @@ int main(void) {
         printf("6. Sair\n");
 
         // Escolha das opcoes
-        printf("Escolha uma das opcoes: ");
+        printf("\nEscolha uma das opcoes: ");
         scanf("%d", &opcao);
 
         //Condição 1
@@ -144,14 +160,15 @@ int main(void) {
         if(opcao == 4) {
             atualizar_estoque(&lista);
         }
-        // //Condição 5
-        // if(opcao == 5) {
-        //     remover_produto();
-        // }
+        //Condição 5
+        if(opcao == 5) {
+            remover_produto(&lista);
+        }
         //Condição 6
         if(opcao == 6) {
+            liberar_memoria(&lista);
             printf("VOCE FOI DESCONECTADO!");
-            exit;
+            exit(0);
         }
     }
     return 0;
