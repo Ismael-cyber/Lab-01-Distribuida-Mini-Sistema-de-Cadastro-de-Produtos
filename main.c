@@ -1,7 +1,12 @@
+// Hailo Neto
+// Ismael Sousa
+// Gabriel Lazareti
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-// Tipo do dado que será usado
+// Estrutura do produto
 typedef struct {
     int codigo;
     char *nome;
@@ -9,167 +14,245 @@ typedef struct {
     int quantidade;
 } Produto;
 
+// Estrutura da lista
 typedef struct {
     Produto *dados;
     int quantidade;
 } Lista;
 
-//Funções do nosso sistema de cadastro de produtos
-void adicionar_produto(Lista *lista) {    
-    printf("Quantos produtos ira adicionar: ");
-    scanf("%d", &lista->quantidade);
+// ---------------- ADICIONAR PRODUTO ----------------
 
-    lista->dados = malloc(lista->quantidade * sizeof(Produto));
-    
-    if(lista->dados == NULL) {
-        printf("Erro: Falha na alocação de memória!\n");
+void adicionar_produto(Lista *lista) {
+
+    lista->quantidade++;
+
+    lista->dados = realloc(lista->dados, lista->quantidade * sizeof(Produto));
+
+    if(lista->dados == NULL){
+        printf("Erro de alocacao de memoria\n");
+        exit(1);
     }
-    
-    for(int i = 0; i < lista->quantidade; i++) {
-        lista->dados[i].nome = malloc(50);
 
-        printf("Nome: ");
-        scanf("%49s", lista->dados[i].nome);
-        printf("Preco: ");
-        scanf("%f", &lista->dados[i].preco);
-        printf("Quantidade: ");
-        scanf("%d", &lista->dados[i].quantidade);
-        lista->dados[i].codigo = i + 1;
-    }
-};
+    Produto *novo = &lista->dados[lista->quantidade - 1];
 
-void listar_produtos(Lista *lista) {
-    if(lista->dados == NULL) {
-        printf("Nenhum produto cadastrado.\n");
+    novo->codigo = lista->quantidade;
+
+    novo->nome = malloc(50);
+
+    printf("Nome do produto: ");
+    scanf("%49s", novo->nome);
+
+    printf("Preco: ");
+    scanf("%f", &novo->preco);
+
+    printf("Quantidade: ");
+    scanf("%d", &novo->quantidade);
+
+    printf("Produto cadastrado com sucesso!\n");
+}
+
+// ---------------- LISTAR PRODUTOS ----------------
+
+void listar_produtos(Lista *lista){
+
+    if(lista->quantidade == 0){
+        printf("Nenhum produto cadastrado\n");
         return;
     }
 
-    printf("+--------------------------------------------+\n");
-    printf("----------- LISTAGEM DOS PRODUTOS ------------\n");
-    printf("+--------------------------------------------+\n");
-    for(int i = 0; i < lista->quantidade; i++) {
-        printf("|  %3d  |  %-10s  |  %8.2f  |  %4d  |\n",
-            lista->dados[i].codigo, 
-            lista->dados[i].nome, 
-            lista->dados[i].preco, 
-            lista->dados[i].quantidade); 
-        }
-    printf("+--------------------------------------------+\n");
-};
+    float total_estoque = 0;
 
-Produto* buscar_produto(Lista *lista) {
-    int codigo_produto;
-    printf("Digite o codigo do produto cadastro em nosso sistema: ");
-    scanf(" %d", &codigo_produto);
+    printf("\n+---------------------------------------------------------------+\n");
+    printf("| COD | NOME        | PRECO     | QTD | VALOR EM ESTOQUE        |\n");
+    printf("+---------------------------------------------------------------+\n");
 
-    for(int i = 0; i < lista->quantidade; i++) {
-        if(codigo_produto == lista->dados[i].codigo) {
-            return &lista->dados[i];
-        }
-    }   
+    for(int i = 0; i < lista->quantidade; i++){
 
-    return NULL;
-};
+        float valor = lista->dados[i].preco * lista->dados[i].quantidade;
 
-void imprimirProduto(Produto *p) {
-    if(p == NULL) {
-        printf("Produto nao encontrado.\n");
+        total_estoque += valor;
+
+        printf("| %3d | %-11s | %8.2f | %3d | %10.2f |\n",
+            lista->dados[i].codigo,
+            lista->dados[i].nome,
+            lista->dados[i].preco,
+            lista->dados[i].quantidade,
+            valor);
     }
 
-    printf("+-----------------------------------------+\n");
-    printf("| Cod    | Nome        | Preco   | Qtd    |\n");
-    printf("+-----------------------------------------+\n");
-    printf("| %6d | %-11s | %-7.2f | %-6d |\n",
-           p->codigo,
-           p->nome,
-           p->preco,
-           p->quantidade);
-    printf("+-----------------------------------------+\n");
+    printf("+---------------------------------------------------------------+\n");
+
+    printf("Valor total do estoque: %.2f\n", total_estoque);
 }
 
-void atualizar_estoque(Lista *lista) {
-    int novo_valor_estoque;
+// ---------------- BUSCAR PRODUTO ----------------
 
-    Produto *atualiza_produto = buscar_produto(lista);
-    
-    printf("\nDigite o novo valor existente no estoque: ");
-    scanf(" %d", &novo_valor_estoque);
-    
-    atualiza_produto->quantidade = novo_valor_estoque;
+Produto* buscar_produto(Lista *lista){
 
-    imprimirProduto(atualiza_produto);
-};
+    int codigo;
 
-void remover_produto(Lista *lista) {
-    Produto *produto_removido = buscar_produto(lista);
+    printf("Digite o codigo do produto: ");
+    scanf("%d", &codigo);
 
-    free(produto_removido->nome); //Liberando a memória alocada para o nome do produto no vetor
+    for(int i = 0; i < lista->quantidade; i++){
 
-    for(int i = produto_removido->codigo; i < lista->quantidade - 1; i++) {
-        lista->dados[i] = lista->dados[i + 1]; //Deslocando os elementos no vetor
+        if(lista->dados[i].codigo == codigo){
+
+            return &lista->dados[i];
+
+        }
     }
 
-    lista->quantidade--; //Diminuindo a quantidade de produtos no vetor
-    lista->dados = realloc(lista->dados, lista->quantidade * sizeof(Produto)); // Realocando tamanho do vetor
-};
+    return NULL;
+}
 
-void liberar_memoria(Lista *lista) {
+// ---------------- IMPRIMIR PRODUTO ----------------
+
+void imprimirProduto(Produto *p){
+
+    if(p == NULL){
+        printf("Produto nao encontrado\n");
+        return;
+    }
+
+    printf("\n+----------------------------------------+\n");
+    printf("| COD | NOME        | PRECO   | QTD      |\n");
+    printf("+----------------------------------------+\n");
+
+    printf("| %3d | %-11s | %7.2f | %8d |\n",
+        p->codigo,
+        p->nome,
+        p->preco,
+        p->quantidade);
+
+    printf("+----------------------------------------+\n");
+}
+
+// ---------------- ATUALIZAR ESTOQUE ----------------
+
+void atualizar_estoque(Lista *lista){
+
+    Produto *produto = buscar_produto(lista);
+
+    if(produto == NULL){
+        printf("Produto nao encontrado\n");
+        return;
+    }
+
+    int nova_qtd;
+
+    printf("Digite a nova quantidade: ");
+    scanf("%d", &nova_qtd);
+
+    produto->quantidade = nova_qtd;
+
+    printf("Estoque atualizado!\n");
+
+    imprimirProduto(produto);
+}
+
+// ---------------- REMOVER PRODUTO ----------------
+
+void remover_produto(Lista *lista){
+
+    int codigo;
+
+    printf("Digite o codigo do produto que deseja remover: ");
+    scanf("%d", &codigo);
+
+    int indice = -1;
+
+    for(int i = 0; i < lista->quantidade; i++){
+        if(lista->dados[i].codigo == codigo){
+            indice = i;
+            break;
+        }
+    }
+
+    if(indice == -1){
+        printf("Produto nao encontrado\n");
+        return;
+    }
+
+    free(lista->dados[indice].nome);
+
+    for(int i = indice; i < lista->quantidade - 1; i++){
+        lista->dados[i] = lista->dados[i + 1];
+    }
+
+    lista->quantidade--;
+
+    lista->dados = realloc(lista->dados, lista->quantidade * sizeof(Produto));
+
+    printf("Produto removido com sucesso!\n");
+}
+
+// ---------------- LIBERAR MEMORIA ----------------
+
+void liberar_memoria(Lista *lista){
+
+    for(int i = 0; i < lista->quantidade; i++){
+        free(lista->dados[i].nome);
+    }
+
     free(lista->dados);
-    printf("Memoria liberada, forte abraco!\n");
-};
 
-int main(void) {
-    // Declarar vetor de Produtos
+    printf("Memoria liberada com sucesso!\n");
+}
+
+// ---------------- MAIN ----------------
+
+int main(){
+
     Lista lista;
+
     lista.dados = NULL;
     lista.quantidade = 0;
 
-    //Loop para rodar sistema enquanto usuário não quer sair do programa
-    int opcao;
-    while(opcao != 6) {
-        // Aparicao do MENU
+    int opcao = 0;
+
+    while(opcao != 6){
+
         printf("\n==============================================\n");
         printf("====== Sistema de Cadastro de Produtos =======\n");
         printf("==============================================\n");
-        printf("\nMenu\n");
-        printf("1. Adicionar Produto\n");
-        printf("2. Listar Produtos\n");
-        printf("3. Buscar Produto\n");
-        printf("4. Atualizar Estoque\n");
-        printf("5. Remover Produto\n");
-        printf("6. Sair\n");
 
-        // Escolha das opcoes
-        printf("\nEscolha uma das opcoes: ");
+        printf("\n1 - Adicionar Produto\n");
+        printf("2 - Listar Produtos\n");
+        printf("3 - Buscar Produto\n");
+        printf("4 - Atualizar Estoque\n");
+        printf("5 - Remover Produto\n");
+        printf("6 - Sair\n");
+
+        printf("\nEscolha uma opcao: ");
         scanf("%d", &opcao);
 
-        //Condição 1
-        if(opcao == 1) {
+        if(opcao == 1){
             adicionar_produto(&lista);
         }
-        // //Condição 2
-        if(opcao == 2) {
+
+        if(opcao == 2){
             listar_produtos(&lista);
         }
-        //Condição 3
-        if(opcao == 3) {
-            Produto *resultado = buscar_produto(&lista);
-            imprimirProduto(resultado);
+
+        if(opcao == 3){
+            Produto *p = buscar_produto(&lista);
+            imprimirProduto(p);
         }
-        //Condição 4
-        if(opcao == 4) {
+
+        if(opcao == 4){
             atualizar_estoque(&lista);
         }
-        //Condição 5
-        if(opcao == 5) {
+
+        if(opcao == 5){
             remover_produto(&lista);
         }
-        //Condição 6
-        if(opcao == 6) {
+
+        if(opcao == 6){
             liberar_memoria(&lista);
-            printf("VOCE FOI DESCONECTADO!");
-            exit(0);
+            printf("Encerrando programa...\n");
         }
     }
+
     return 0;
 }
