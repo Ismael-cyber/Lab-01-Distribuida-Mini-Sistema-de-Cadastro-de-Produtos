@@ -1,6 +1,6 @@
-// Hailo Neto
-// Ismael Sousa
-// Gabriel Lazareti
+// Gabriel Lazareti - RA: 10417353
+// Hailo Neto - RA: 10416839
+// Ismael Sousa - RA: 10410870
 
 #include <stdio.h>
 #include <stdlib.h>
